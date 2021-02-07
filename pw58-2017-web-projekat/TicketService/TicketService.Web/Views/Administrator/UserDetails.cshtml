@@ -1,0 +1,195 @@
+﻿@model TicketService.Data.Models.UserDTO
+@using TicketService.Data.Models
+
+@{
+    ViewBag.Title = "UserDetails";
+    Layout = "~/Views/Shared/_Layout_Administrator.cshtml";
+}
+
+<h2>Customer Details</h2>
+
+<div>
+    <hr />
+    <dl style="font-size:larger" class="dl-horizontal">
+
+        @{
+            if (Model.IsSuspitious)
+            {
+                <dt style="color:darkred;font-size:x-large">
+                    SUSPITIOUS
+                </dt>
+
+                <dd style="color:darkred;font-size:x-large">
+                    CUSTOMER
+                </dd>
+            }
+        }
+
+        <dt>
+            Username
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+
+        <dt>
+            First name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+
+        <dt>
+            Last name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+
+        <dt>
+            Gender
+        </dt>
+
+        @{
+            if (Model.Gender)
+            {
+                <dd>
+                    Male
+                </dd>
+            }
+            else
+            {
+                <dd>
+                    Female
+                </dd>
+            }
+        }
+
+        <dt>
+            Birth date
+        </dt>
+
+        <dd>
+            @Convert.ToString(string.Format("{0:dd/MM/yyyy}", Model.BirthDate))
+        </dd>
+
+        @{
+            if (Model.Role == EUserRole.Customer)
+            {
+                <dt>
+                    Collected points
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.NumberOfCollectedPoints)
+                </dd>
+
+                <dt>
+                    Type
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.CustomerType).ToString()
+                </dd>
+
+                <dt>
+                    Status
+                </dt>
+
+                if (Model.IsDeleted)
+                {
+                    <dd id="item-is-deleted">
+                        Blocked
+                    </dd>
+                }
+                else
+                {
+                    <dd id="item-is-deleted">
+                        Active
+                    </dd>
+                }
+            }
+            else
+            {
+                <dt>
+                    Collected points
+                </dt>
+
+                <dd>
+                    -
+                </dd>
+
+                <dt>
+                    Type
+                </dt>
+
+                <dd>
+                    -
+                </dd>
+
+                <dt>
+                    Status
+                </dt>
+
+                if (Model.IsDeleted)
+                {
+                    <dd id="item-is-deleted">
+                        Blocked
+                    </dd>
+                }
+                else
+                {
+                    <dd id="item-is-deleted">
+                        Active
+                    </dd>
+                }
+            }
+        }
+
+    </dl>
+</div>
+
+<div id="BtnSection" style="margin-top:20px;margin-bottom:20px;width:1100px;text-align:left">
+    <input data-user-role="@Model.Role"  id="delete-btn" style="border-color:black;font-size:28px;margin-right:20px" class="btn btn-default delete-btn" type="submit" value="Block/Unblock" />
+</div>
+
+<div id="AlertMsg" class="alert alert-danger fade in" style="display:none">
+    <button id="alert-close-btn" href="#" class="close" aria-label="close">&times;</button>
+    <strong style="font-size:18px">Administrators cannot be blocked!</strong>
+</div>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#BtnSection .delete-btn").on("click", function () {
+                var UserID = @Model.ID;
+                var UserRole = $(this).attr("data-user-role");
+                var IsDeleted = $("#item-is-deleted");
+
+                IsDeleted.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/DeleteUser?UserID=" + UserID +
+                        "&UserRole=" + UserRole,
+                    contentType: "html",
+                    success: function (result) {
+                        IsDeleted.append(result.Status);
+
+                        if (result.Message == true) {
+                            var x = document.getElementById("AlertMsg");
+                            x.style.display = "block";
+                        }
+                    }
+                });
+            });
+        });
+        $("#alert-close-btn").on("click", function () {
+            var x = document.getElementById("AlertMsg");
+            x.style.display = "none";
+        });
+    </script>
+}

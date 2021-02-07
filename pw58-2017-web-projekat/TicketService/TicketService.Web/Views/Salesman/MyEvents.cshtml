@@ -1,0 +1,66 @@
+﻿@model IEnumerable<TicketService.Data.ViewModels.EventViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout_Salesman.cshtml";
+}
+
+<h2>My events</h2>
+<p>
+    @Html.ActionLink("Create New", "CreateEvent")
+</p>
+
+<table class="table">
+    <tr>
+        <th>
+            Event name
+        </th>
+        <th>
+            Event date
+        </th>
+        <th>
+            Venue name
+        </th>
+        <th></th>
+        <th>
+            Ticket price
+        </th>
+        <th>
+            Rating
+        </th>
+        <th>
+            Status
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Name)
+            </td>
+            <td>
+                @item.EventDate.ToString("dd.MM.yyyy, HH:mm")
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.VenueName)
+            </td>
+            <td>
+                <img src="/Images/@item.Poster" alt="HTML5 Icon" style="width:128px;height:128px;">
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TicketPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rating)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Status)
+            </td>
+            <td>
+                @Html.ActionLink("Edit", "EditEvent", new { id = item.ID }) |
+                @Html.ActionLink("Delete", "DeleteEvent", new { id = item.ID })
+            </td>
+        </tr>
+    }
+</table>

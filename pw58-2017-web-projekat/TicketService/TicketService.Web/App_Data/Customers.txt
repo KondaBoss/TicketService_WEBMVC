@@ -1,0 +1,4 @@
+1|Bogdan|Kondic|KondaBoss|123123|True|1999-01-19|0|1|0|False|False
+2|Nikola|Bogdanovic|Dzoni99|123123|True|1999-11-11|0|1|0|False|False
+3|Veljko|Djokic|customer|123123|True|1996-05-10|0|1|0|False|False
+4|Dule|Kondic|DKondic|123123|True|1972-09-14|0|1|0|False|False

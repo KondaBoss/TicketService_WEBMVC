@@ -1,0 +1,89 @@
+﻿@model IEnumerable<TicketService.Data.ViewModels.TicketViewModel>
+
+@{
+    ViewBag.Title = "AllTickets";
+    Layout = "~/Views/Shared/_Layout_Administrator.cshtml";
+}
+
+<h2>All Tickets</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            @Html.DisplayNameFor(model => model.EventName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.TicketPrice)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.EventDate)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.CustomerName)
+        </th>
+        <th>
+            @Html.DisplayNameFor(model => model.Status)
+        </th>
+        <th>
+            Is Deleted
+        </th>
+        <th></th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.EventName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TicketPrice)
+            </td>
+            <td>
+                @item.EventDate.ToString("dd.MM.yyyy, HH:mm")
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.CustomerName)
+            </td>
+
+            @{ 
+                if (item.Status)
+                {
+                    <td>
+                        Reserved
+                    </td>
+                    
+                }
+                else
+                {
+                    <td>
+                        Cancelled
+                    </td>
+                }
+            }
+
+            @{ 
+                if (item.IsDeleted)
+                {
+                    <td>
+                        Yes
+                    </td>
+                    <td>
+                        @Html.ActionLink("Undelete", "DeleteTicket", new { id = item.ID })
+                    </td>
+                    
+                }
+                else
+                {
+                    <td>
+                        No
+                    </td>
+                    <td>
+                        @Html.ActionLink("Delete", "DeleteTicket", new { id = item.ID })
+                    </td>
+                }
+            }
+        </tr>
+    }
+
+</table>

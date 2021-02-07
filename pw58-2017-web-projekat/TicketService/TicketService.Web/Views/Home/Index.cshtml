@@ -1,0 +1,474 @@
+﻿@model IEnumerable<TicketService.Data.ViewModels.EventViewModel>
+
+@{
+    ViewBag.Title = "Index";
+    Layout = ViewBag.Layout;
+}
+
+<h2>Home page</h2>
+@{
+    if (ViewBag.UserRole == "Salesman")
+    {
+        <p>
+            @Html.ActionLink("Create New", "Create")
+        </p>
+    }
+}
+
+
+<div style="width:1080px;" class="table">
+    <table style="width:inherit" class="table">
+        <thead title="Searching">
+            <tr>
+                <th>Searching</th>
+                <th>Filtering</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-bordered" style="border-bottom:none;border-left:none;">
+                    <div class="container">
+                        <p>
+                            Event name: <input id="EventNameFilterText" name="EventNameFilterText" type="text" value="" />
+                            Venue: <input id="VenueFilterText" name="VenueFilterText" type="text" value="" />
+                            Address: <input id="AddressFilterText" name="AddressFilterText" type="text" value="" />
+                        </p>
+                        <p>
+                            Date from:
+                            <input id="DateFromFilterText" name="DateFromFilterText" type="datetime-local" />
+                            to
+                            <input id="DateToFilterText" name="DateToFilterText" type="datetime-local" />
+                        </p>
+                        <p>
+                            Price from:
+                            <input id="PriceFromFilterText" name="PriceFromFilterText" type="number" value="" />
+                            to
+                            <input id="PriceToFilterText" name="PriceToFilterText" type="number" value="" />
+                            <input type="submit" id="SearchBtn" value="Search" />
+                        </p>
+                    </div>
+                </td>
+                <td class="table-bordered" style="border-bottom:none;border-right:none;">
+                    <p>
+                        <b>Event Type: </b>
+                        <select id="EventType">
+                            <option value="All">All</option>
+                            <option value="Concert">Concert</option>
+                            <option value="Festival">Festival</option>
+                            <option value="Theater">Theater</option>
+                            <option value="Party">Party</option>
+                        </select>
+                    </p>
+                    <p>
+                        <b>Ticket status: </b>
+                        <select id="TicketStatus">
+                            <option value="All">All</option>
+                            <option value="Available">Available</option>
+                            <option value="Unavailable">Unavailable</option>
+                        </select>
+                    </p>
+                </td>
+        </tbody>
+    </table>
+</div>
+
+<table id="myTable" class="table table-bordered">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">
+                Event name
+            </th>
+            <th>
+                Event type
+            </th>
+            <th onclick="sortTableByDate()">
+                Event date
+            </th>
+            <th onclick="sortTable(3)">
+                Venue
+            </th>
+            <th onclick="sortTable(4)">
+                Address
+            </th>
+            <th></th>
+            <th onclick="sortTableByPrice(6)">
+                Ticket Price
+            </th>
+            <th>
+                Rating
+            </th>
+            @{
+                if (ViewBag.UserRole == "Administrator")
+                {
+                    <th>
+                        Status
+                    </th>
+                    <th>
+                        Is Deleted
+                    </th>
+                }
+            }
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="DataSearching">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Name)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EventType)
+                </td>
+                <td>
+
+                    @item.EventDate.ToString("dd.MM.yyyy, HH:mm")
+                    @*@Convert.ToString(string.Format("{0:dd/MM/yyyy hh:mm tt}", item.EventDate))*@
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.VenueName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.VenueAddress)
+                </td>
+                <td>
+                    <img src="/Images/@item.Poster" alt="HTML5 Icon" style="width:128px;height:128px;">
+                </td>
+                <td>
+                    @item.TicketPrice
+
+                </td>
+                @{
+                    if (item.Rating == -1)
+                    {
+                        <td>
+                            -
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Rating)
+                        </td>
+                    }
+                }
+
+                @{
+                    if (ViewBag.UserRole == "Administrator")
+                    {
+                        if (item.Status)
+                        {
+                            <td>
+                                Active
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                Inactive
+                            </td>
+                        }
+                        if (item.IsDeleted)
+                        {
+                            <td>
+                                Yes
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                No
+                            </td>
+                        }
+
+                        <td>
+                            @Html.ActionLink("Details", "EventDetails", new { id = item.ID })
+                        </td>
+
+                    }
+                    else
+                    {
+                        <td>
+                            @Html.ActionLink("Details", "EventDetails", new { id = item.ID })
+                        </td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script>
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [day, month, year].join('/');
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#SearchBtn").click(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchVenueValue = $("#VenueFilterText").val();
+                var SearchAddressValue = $("#AddressFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var EventType = $("#EventType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Home/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchVenueValue=" + SearchVenueValue +
+                        "&SearchAddressValue=" + SearchAddressValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&EventType=" + EventType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+            $("#EventType").change(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchVenueValue = $("#VenueFilterText").val();
+                var SearchAddressValue = $("#AddressFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var EventType = $("#EventType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Home/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchVenueValue=" + SearchVenueValue +
+                        "&SearchAddressValue=" + SearchAddressValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&EventType=" + EventType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+            $("#TicketStatus").change(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchVenueValue = $("#VenueFilterText").val();
+                var SearchAddressValue = $("#AddressFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var EventType = $("#EventType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Home/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchVenueValue=" + SearchVenueValue +
+                        "&SearchAddressValue=" + SearchAddressValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&EventType=" + EventType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByDate() {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[2];
+                    y = rows[i + 1].getElementsByTagName("TD")[2];
+                    var dt1 = x.innerHTML.split(',');
+                    var dt2 = y.innerHTML.split(',');
+                    var dateParts1 = dt1[0].split('.');
+                    var timeParts1 = dt1[1].split(':');
+                    var dateParts2 = dt2[0].split('.');
+                    var timeParts2 = dt2[1].split(':');
+                    var d1 = new Date(dateParts1[2], dateParts1[1] - 1, dateParts1[0], timeParts1[0], timeParts1[1]);
+                    var d2 = new Date(dateParts2[2], dateParts2[1] - 1, dateParts2[0], timeParts2[0], timeParts2[1]);
+
+
+                    if (dir == "asc") {
+                        if (d1 > d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (d1 < d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByPrice(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (parseInt(x.innerHTML) > parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (parseInt(x.innerHTML) < parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+
+}

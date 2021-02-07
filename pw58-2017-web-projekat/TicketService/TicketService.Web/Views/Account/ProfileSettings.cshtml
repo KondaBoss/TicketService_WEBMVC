@@ -1,0 +1,105 @@
+﻿@model TicketService.Data.ViewModels.ProfileViewModel
+@using TicketService.Data.Models;
+
+@{
+    ViewBag.Title = "ProfileSettings";
+    Layout = ViewBag.Layout;
+}
+
+<h2>Profile Settings</h2>
+
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            First name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+
+        <dt>
+            Last name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+
+        <dt>
+            Gender
+        </dt>
+
+        @{
+            if (Model.Gender)
+            {
+                <dd>
+                    Male
+                </dd>
+            }
+            else
+            {
+                <dd>
+                    Female
+                </dd>
+            }
+        }
+
+        <dt>
+            Birth date
+        </dt>
+
+        <dd>
+            @Convert.ToString(string.Format("{0:dd/MM/yyyy}", Model.BirthDate))
+        </dd>
+
+        <dt>
+            Username
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+
+
+        @{
+            if (Model.Role == EUserRole.Customer)
+            {
+                <dt>
+                    @Html.DisplayNameFor(model => model.NumberOfCollectedPoints)
+                </dt>
+
+                <dd>
+                    @Html.DisplayFor(model => model.NumberOfCollectedPoints)
+                </dd>
+
+                <dt>
+                    Customer type
+                </dt>
+
+                if (Model.NumberOfCollectedPoints >= 1500)
+                {
+                    <dd>
+                        Gold
+                    </dd>
+                }
+                else if (Model.NumberOfCollectedPoints >= 500)
+                {
+                    <dd>
+                        Silver
+                    </dd>
+                }
+                else
+                {
+                    <dd>
+                        Bronze
+                    </dd>
+                }
+            }
+        }
+    </dl>
+</div>
+<p>
+    @Html.ActionLink("Change settings", "ChangeProfileSettings", new { role = Model.Role.ToString(), id = Model.ID })
+</p>

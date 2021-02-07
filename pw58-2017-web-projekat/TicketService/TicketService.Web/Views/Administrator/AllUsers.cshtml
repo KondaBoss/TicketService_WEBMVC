@@ -1,0 +1,671 @@
+﻿@model IEnumerable<TicketService.Data.Models.UserDTO>
+@using TicketService.Data.Models;
+@{
+    ViewBag.Title = "All Users";
+    Layout = "~/Views/Shared/_Layout_Administrator.cshtml";
+}
+
+<h2>All users</h2>
+
+<div style="width:1080px;" class="table">
+    <table style="width:inherit" class="table">
+        <thead title="Searching">
+            <tr>
+                <th>Searching</th>
+                <th>Filtering</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-bordered" style="border-bottom:none;border-left:none;">
+                    <div class="container">
+                        <p>
+                            Username: <input id="UserNameFilterText" name="UserNameFilterText" type="text" value="" />
+                            First name: <input id="FirstNameFilterText" name="UserNameFilterText" type="text" value="" />
+                            Last name: <input id="LastNameFilterText" name="UserNameFilterText" type="text" value="" />
+                        </p>
+                        <p>
+                            Collected points from:
+                            <input id="CollectedPointsFromFilterText" name="CollectedPointsFromFilterText" type="number" value="" />
+                            to
+                            <input id="CollectedPointsToFilterText" name="CollectedPointsToFilterText" type="number" value="" />
+                            <input type="submit" id="SearchBtn" value="Search" />
+                        </p>
+                    </div>
+                </td>
+                <td class="table-bordered" style="border-bottom:none;border-right:none;">
+                    <p>
+                        <b>User role: </b>
+                        <select id="UserRole">
+                            <option value="All">All</option>
+                            <option value="Administrator">Administrator</option>
+                            <option value="Salesman">Salesman</option>
+                            <option value="Customer">Customer</option>
+                        </select>
+                    </p>
+                    <p>
+                        <b>User type: </b>
+                        <select id="UserType">
+                            <option value="All">All</option>
+                            <option value="Bronze">Bronze</option>
+                            <option value="Silver">Silver</option>
+                            <option value="Gold">Gold</option>
+                        </select>
+                    </p>
+                </td>
+        </tbody>
+    </table>
+</div>
+<table id="myTable" class="table table-bordered">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">
+                Username
+            </th>
+            <th onclick="sortTable(1)">
+                First Name
+            </th>
+            <th onclick="sortTable(2)">
+                Last Name
+            </th>
+            <th>
+                Birth Date
+            </th>
+            <th>
+                Gender
+            </th>
+            <th>
+                Role
+            </th>
+            <th onclick="sortTableByNumber(6)">
+                Collected points
+            </th>
+            <th>
+                Type
+            </th>
+            <th>
+                Cancelled tickets
+            </th>
+            <th>
+                Status
+            </th>
+        </tr>
+    </thead>
+
+    <tbody id="DataSearching">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.ActionLink($"{item.UserName}", "UserDetails", new { id = item.ID, role = item.Role })
+                </td>
+                <td>
+                    @item.FirstName
+                </td>
+                <td>
+                    @item.LastName
+                </td>
+                <td>
+                    @Convert.ToString(string.Format("{0:dd/MM/yyyy}", item.BirthDate))
+                </td>
+                @{
+                    if (item.Gender)
+                    {
+                        <td>
+                            Male
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            Female
+                        </td>
+                    }
+                }
+                <td>
+                    @item.Role
+                </td>
+                @{
+                    if (item.NumberOfCollectedPoints == null)
+                    {
+                        <td>
+                            -
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            @item.NumberOfCollectedPoints
+                        </td>
+                    }
+                }
+
+                @{
+                    if (item.CustomerType == 1)
+                    {
+                        <td>
+                            BRONZE
+                        </td>
+                    }
+                    else if (item.CustomerType == 2)
+                    {
+                        <td>
+                            SILVER
+                        </td>
+                    }
+                    else if (item.CustomerType == 3)
+                    {
+                        <td>
+                            GOLD
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            -
+                        </td>
+                    }
+                }
+
+                @{
+                    if (item.NumberOfTicketsCancelled != null)
+                    {
+                        <td>
+                            @item.NumberOfTicketsCancelled
+                        </td>
+                    }
+                    else
+                    {
+                        <td>
+                            -
+                        </td>
+                    }
+                }
+
+                @{
+                    if (!item.IsDeleted)
+                    {
+                        if (!item.IsSuspitious)
+                        {
+                            <td>
+                                Active
+                            </td>
+                        }
+                        else
+                        {
+                            <td>
+                                Suspitious
+                            </td>
+                        }
+
+                    }
+                    else
+                    {
+                        <td>
+                            Blocked
+                        </td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script>
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+
+            return [day, month, year].join('/');
+        }
+    </script>
+    <script>
+        $(document).ready(function () {
+            $("#SearchBtn").click(function () {
+                var SearchUsernameValue = $("#UserNameFilterText").val();
+                var SearchFirstNameValue = $("#FirstNameFilterText").val();
+                var SearchLastNameValue = $("#LastNameFilterText").val();
+                var SearchCollectedPointsFromValue = $("#CollectedPointsFromFilterText").val();
+                var SearchCollectedPointsToValue = $("#CollectedPointsToFilterText").val();
+                var UserRole = $("#UserRole").val();
+                var UserType = $("#UserType").val();
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/GetSearchingData?SearchUsernameValue=" + SearchUsernameValue +
+                        "&SearchFirstNameValue=" + SearchFirstNameValue +
+                        "&SearchLastNameValue=" + SearchLastNameValue +
+                        "&SearchCollectedPointsFromValue=" + SearchCollectedPointsFromValue +
+                        "&SearchCollectedPointsToValue=" + SearchCollectedPointsToValue +
+                        "&UserRole=" + UserRole +
+                        "&UserType=" + UserType,
+                    contentType: "html",
+                    success: function (result) {
+                        if (result.length == 0) {
+                            SetData.append('<tr><td colspan="9">No matches found</td></tr>');
+                        }
+                        else {
+                            $.each(result, function (index, value) {
+                                var date = new Date(parseInt(value.BirthDate.substr(6)));
+
+                                var Data1 = "<tr>" +
+                                    "<td>" + value.UserName + "</td>" +
+                                    "<td>" + value.FirstName + "</td>" +
+                                    "<td>" + value.LastName + "</td>" +
+                                    "<td>" + formatDate(date) + "</td>";
+
+                                if (value.Gender == true) {
+                                    var Data2 = "<td>Male</td>";
+
+                                }
+                                else {
+                                    var Data2 = "<td>Female</td>";
+                                }
+
+                                if (value.Role == 1) {
+                                    var Data3 = "<td>Customer</td>";
+
+                                }
+                                else if (value.Role == 2) {
+                                    var Data3 = "<td>Salesman</td>";
+                                }
+                                else {
+                                    var Data3 = "<td>Administrator</td>";
+                                }
+
+                                if (value.NumberOfCollectedPoints == null) {
+                                    var Data4 = "<td>-</td>";
+                                }
+                                else {
+                                    var Data4 = "<td>" + value.NumberOfCollectedPoints + "</td>";
+                                }
+
+                                if (value.CustomerType == 1) {
+                                    var Data5 = "<td>BRONZE</td>";
+                                }
+                                else if (value.CustomerType == 2) {
+                                    var Data5 = "<td>SILVER</td>";
+                                }
+                                else if (value.CustomerType == 3) {
+                                    var Data5 = "<td>GOLD</td>";
+                                }
+                                else {
+                                    var Data5 = "<td>-</td>";
+                                }
+
+                                if (!value.IsDeleted) {
+                                    if (!value.IsSuspitious) {
+                                        var Data6 = "<td>Active</td>";
+                                    }
+                                    else {
+                                        var Data6 = "<td>Suspitious</td>";
+                                    }
+
+                                }
+                                else {
+                                    var Data6 = "<td>Blocked</td>";
+                                }
+
+                                SetData.append(Data1 + Data2 + Data3 + Data4 + Data5 + Data6);
+                            });
+                        }
+                    }
+                });
+            });
+            $("#UserRole").change(function () {
+                var SearchUsernameValue = $("#UserNameFilterText").val();
+                var SearchFirstNameValue = $("#FirstNameFilterText").val();
+                var SearchLastNameValue = $("#LastNameFilterText").val();
+                var SearchCollectedPointsFromValue = $("#CollectedPointsFromFilterText").val();
+                var SearchCollectedPointsToValue = $("#CollectedPointsToFilterText").val();
+                var UserRole = $("#UserRole").val();
+                var UserType = $("#UserType").val();
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/GetSearchingData?SearchUsernameValue=" + SearchUsernameValue +
+                        "&SearchFirstNameValue=" + SearchFirstNameValue +
+                        "&SearchLastNameValue=" + SearchLastNameValue +
+                        "&SearchCollectedPointsFromValue=" + SearchCollectedPointsFromValue +
+                        "&SearchCollectedPointsToValue=" + SearchCollectedPointsToValue +
+                        "&UserRole=" + UserRole +
+                        "&UserType=" + UserType,
+                    contentType: "html",
+                    success: function (result) {
+                        if (result.length == 0) {
+                            SetData.append('<tr><td colspan="9">No matches found</td></tr>');
+                        }
+                        else {
+                            $.each(result, function (index, value) {
+                                var date = new Date(parseInt(value.BirthDate.substr(6)));
+
+                                var Data1 = "<tr>" +
+                                    "<td>" + value.UserName + "</td>" +
+                                    "<td>" + value.FirstName + "</td>" +
+                                    "<td>" + value.LastName + "</td>" +
+                                    "<td>" + formatDate(date) + "</td>";
+
+                                if (value.Gender == true) {
+                                    var Data2 = "<td>Male</td>";
+
+                                }
+                                else {
+                                    var Data2 = "<td>Female</td>";
+                                }
+
+                                if (value.Role == 1) {
+                                    var Data3 = "<td>Customer</td>";
+
+                                }
+                                else if (value.Role == 2) {
+                                    var Data3 = "<td>Salesman</td>";
+                                }
+                                else {
+                                    var Data3 = "<td>Administrator</td>";
+                                }
+
+                                if (value.NumberOfCollectedPoints == null) {
+                                    var Data4 = "<td>-</td>";
+                                }
+                                else {
+                                    var Data4 = "<td>" + value.NumberOfCollectedPoints + "</td>";
+                                }
+
+                                if (value.CustomerType == 1) {
+                                    var Data5 = "<td>BRONZE</td>";
+                                }
+                                else if (value.CustomerType == 2) {
+                                    var Data5 = "<td>SILVER</td>";
+                                }
+                                else if (value.CustomerType == 3) {
+                                    var Data5 = "<td>GOLD</td>";
+                                }
+                                else {
+                                    var Data5 = "<td>-</td>";
+                                }
+
+                                if (!value.IsDeleted) {
+                                    if (!value.IsSuspitious) {
+                                        var Data6 = "<td>Active</td>";
+                                    }
+                                    else {
+                                        var Data6 = "<td>Suspitious</td>";
+                                    }
+
+                                }
+                                else {
+                                    var Data6 = "<td>Blocked</td>";
+                                }
+
+                                SetData.append(Data1 + Data2 + Data3 + Data4 + Data5 + Data6);
+                            });
+                        }
+                    }
+                });
+            });
+            $("#UserType").change(function () {
+                var SearchUsernameValue = $("#UserNameFilterText").val();
+                var SearchFirstNameValue = $("#FirstNameFilterText").val();
+                var SearchLastNameValue = $("#LastNameFilterText").val();
+                var SearchCollectedPointsFromValue = $("#CollectedPointsFromFilterText").val();
+                var SearchCollectedPointsToValue = $("#CollectedPointsToFilterText").val();
+                var UserRole = $("#UserRole").val();
+                var UserType = $("#UserType").val();
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/GetSearchingData?SearchUsernameValue=" + SearchUsernameValue +
+                        "&SearchFirstNameValue=" + SearchFirstNameValue +
+                        "&SearchLastNameValue=" + SearchLastNameValue +
+                        "&SearchCollectedPointsFromValue=" + SearchCollectedPointsFromValue +
+                        "&SearchCollectedPointsToValue=" + SearchCollectedPointsToValue +
+                        "&UserRole=" + UserRole +
+                        "&UserType=" + UserType,
+                    contentType: "html",
+                    success: function (result) {
+                        if (result.length == 0) {
+                            SetData.append('<tr><td colspan="9">No matches found</td></tr>');
+                        }
+                        else {
+                            $.each(result, function (index, value) {
+                                var date = new Date(parseInt(value.BirthDate.substr(6)));
+
+                                var Data1 = "<tr>" +
+                                    "<td>" + value.UserName + "</td>" +
+                                    "<td>" + value.FirstName + "</td>" +
+                                    "<td>" + value.LastName + "</td>" +
+                                    "<td>" + formatDate(date) + "</td>";
+
+                                if (value.Gender == true) {
+                                    var Data2 = "<td>Male</td>";
+
+                                }
+                                else {
+                                    var Data2 = "<td>Female</td>";
+                                }
+
+                                if (value.Role == 1) {
+                                    var Data3 = "<td>Customer</td>";
+
+                                }
+                                else if (value.Role == 2) {
+                                    var Data3 = "<td>Salesman</td>";
+                                }
+                                else {
+                                    var Data3 = "<td>Administrator</td>";
+                                }
+
+                                if (value.NumberOfCollectedPoints == null) {
+                                    var Data4 = "<td>-</td>";
+                                }
+                                else {
+                                    var Data4 = "<td>" + value.NumberOfCollectedPoints + "</td>";
+                                }
+
+                                if (value.CustomerType == 1) {
+                                    var Data5 = "<td>BRONZE</td>";
+                                }
+                                else if (value.CustomerType == 2) {
+                                    var Data5 = "<td>SILVER</td>";
+                                }
+                                else if (value.CustomerType == 3) {
+                                    var Data5 = "<td>GOLD</td>";
+                                }
+                                else {
+                                    var Data5 = "<td>-</td>";
+                                }
+
+                                if (!value.IsDeleted) {
+                                    if (!value.IsSuspitious) {
+                                        var Data6 = "<td>Active</td>";
+                                    }
+                                    else {
+                                        var Data6 = "<td>Suspitious</td>";
+                                    }
+
+                                }
+                                else {
+                                    var Data6 = "<td>Blocked</td>";
+                                }
+
+                                SetData.append(Data1 + Data2 + Data3 + Data4 + Data5 + Data6);
+                            });
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByDate() {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[2];
+                    y = rows[i + 1].getElementsByTagName("TD")[2];
+                    var dt1 = x.innerHTML.split(',');
+                    var dt2 = y.innerHTML.split(',');
+                    var dateParts1 = dt1[0].split('.');
+                    var timeParts1 = dt1[1].split(':');
+                    var dateParts2 = dt2[0].split('.');
+                    var timeParts2 = dt2[1].split(':');
+                    var d1 = new Date(dateParts1[2], dateParts1[1] - 1, dateParts1[0], timeParts1[0], timeParts1[1]);
+                    var d2 = new Date(dateParts2[2], dateParts2[1] - 1, dateParts2[0], timeParts2[0], timeParts2[1]);
+
+
+                    if (dir == "asc") {
+                        if (d1 > d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (d1 < d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByNumber(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (parseInt(x.innerHTML) > parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (parseInt(x.innerHTML) < parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+}

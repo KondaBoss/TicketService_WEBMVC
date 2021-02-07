@@ -1,0 +1,4 @@
+1|Castle|Ulica Stojana Cupica|Ljubovija|15320|False
+2|B2|Ulica Vojvode Misica|Ljubovija|15320|False
+3|Stelova kuca|Stari put|Ljubovija|15320|False
+4|Spens|Sujetska 2|Novi Sad|21000|False

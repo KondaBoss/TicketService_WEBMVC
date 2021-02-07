@@ -1,0 +1,207 @@
+﻿@model TicketService.Data.Models.ShoppingCart
+
+@{
+    ViewBag.Title = "ShoppingCart";
+    Layout = "~/Views/Shared/_Layout_Customer.cshtml";
+}
+
+<style>
+    .fa {
+        font-size: 56px;
+        font-style: normal;
+        text-rendering: auto;
+        line-height: 1;
+        width: 36px;
+        height: 36px;
+        text-align: center;
+        vertical-align: central;
+        margin: 20px auto;
+    }
+
+    .fa-minus {
+        font-size: 56px;
+        color: red;
+    }
+
+    .fa-plus {
+        color: green;
+    }
+
+    .fa-remove {
+        font-size: 56px;
+        color: darkgray;
+    }
+</style>
+
+
+<div style="width:1100px;border-color:black;margin-top:40px" class="table-bordered">
+    <table class="table">
+        <thead title="Shopping cart">
+            <tr>
+                <th style="font-size:36px">Shopping cart</th>
+                <th></th>
+                <th></th>
+                <th></th>
+                <th style="text-align:right"><img src="~/Images/shopping-cart.png" style="width:50px;height:50px;margin-right:20px" /></th>
+            </tr>
+        </thead>
+        <tbody id="ShoppingCart">
+
+            @foreach (var item in Model.Tickets)
+            {
+                <tr id="tr-@item.ID">
+                    <td style="font-size:36px;width:auto;text-align:left;vertical-align:central;line-height:2">@item.EventName</td>
+                    <td style="font-size:36px;width:auto;text-align:left;vertical-align:central;line-height:2">@item.TypeOfTicket</td>
+                    <td>
+                        <button data-ticket-id="@item.ID" style="height:68px;width:68px" class="btn js-minus btn-xs btn-default" id="MinusBtn">
+                            <i class="fa fa-minus">-</i>
+                        </button>
+                        <span class="cart-product-list-item-quantity" style="font-size:36px;">
+                            <i id="num-@item.ID" class="fa" style="font-size:52px;vertical-align: text-top">@item.NumberOfTicketsToBuy</i>
+                        </span>
+                        <button data-ticket-id="@item.ID" style="height:68px;width:68px" class="btn js-plus btn-xs btn-default" id="PlusBtn">
+                            <i class="fa fa-plus">+</i>
+                        </button>
+                    </td>
+                    <td>
+                        <span class="cart-product-list-item-quantity" style="font-size:36px;height:41px;width:41px">
+                            <i id="price-@item.ID" class="fa" style="font-size:52px;vertical-align: text-top">$@(item.NumberOfTicketsToBuy * item.SingleTicketPrice)</i>
+                        </span>
+                    </td>
+                    <td>
+                        <span>
+                            <button data-ticket-id="@item.ID" style="height:68px;width:68px" class="btn js-remove btn-xs btn-default" id="RemoveBtn">
+                                <i class="fa fa-remove">x</i>
+                            </button>
+                        </span>
+                    </td>
+                </tr>
+            }
+            <tr style="border-top-style:groove;border-top-color:black;">
+                <td style="font-size:36px"><b>TOTAL PRICE:</b></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td id="total-price" actual-price-value="@Model.TotalPrice" style="font-size:36px;font-weight:bold">$@Model.TotalPrice</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div style="margin-top:20px;margin-bottom:20px;width:1100px;text-align:right">
+    <input id="PurchaseBtn" style="border-color:black;font-size:28px;" class="btn btn-default" type="submit" value="Confirm Purchase" />
+</div>
+
+<p>
+    @Html.ActionLink("Back to List", "Index")
+</p>
+
+<div id="AlertMsgSuccess" class="alert alert-success fade in" style="display:none">
+    <button id="alert-success-close-btn" href="#" class="close" aria-label="close">&times;</button>
+    <strong style="font-size:18px">Purchase successful.</strong>
+</div>
+
+<div id="AlertMsgWarning" class="alert alert-warning fade in" style="display:none">
+    <button id="alert-warning-close-btn" href="#" class="close" aria-label="close">&times;</button>
+    <strong style="font-size:18px">The cart is empty.</strong>
+</div>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $("#ShoppingCart .js-plus").on("click", function () {
+                var TicketID = $(this).attr("data-ticket-id");
+                var NumberOfTicketsToBuy = $("#num-" + TicketID);
+                var TicketPrice = $("#price-" + TicketID);
+                var TotalPrice = $("#total-price");
+                NumberOfTicketsToBuy.html("");
+                TicketPrice.html("");
+                TotalPrice.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/IncreaseNumberOfTickets?TicketID=" + TicketID,
+                    contentType: "html",
+                    success: function (result) {
+                        NumberOfTicketsToBuy.append(result.NumberOfTicketsToBuy);
+                        TicketPrice.append("$" + result.TicketPrice);
+                        TotalPrice.append("$" + result.TotalPrice);
+                    }
+                });
+            });
+            $("#ShoppingCart .js-minus").on("click", function () {
+                var TicketID = $(this).attr("data-ticket-id");
+                var NumberOfTicketsToBuy = $("#num-" + TicketID);
+                var TicketPrice = $("#price-" + TicketID);
+                var TotalPrice = $("#total-price");
+                NumberOfTicketsToBuy.html("");
+                TicketPrice.html("");
+                TotalPrice.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/DecreaseNumberOfTickets?TicketID=" + TicketID,
+                    contentType: "html",
+                    success: function (result) {
+                        NumberOfTicketsToBuy.append(result.NumberOfTicketsToBuy);
+                        TicketPrice.append("$" + result.TicketPrice);
+                        TotalPrice.append("$" + result.TotalPrice);
+                    }
+                });
+            });
+            $("#ShoppingCart .js-remove").on("click", function () {
+                var TicketID = $(this).attr("data-ticket-id");
+                var TableRow = $("#tr-" + TicketID);
+                var TotalPrice = $("#total-price");
+                TableRow.html("");
+                TotalPrice.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/RemoveTicket?TicketID=" + TicketID,
+                    contentType: "html",
+                    success: function (result) {
+                        TableRow.remove();
+                        TotalPrice.append("$" + result);
+                    }
+                });
+            });
+            $("#PurchaseBtn").on("click", function () {
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/ConfirmPurchase",
+                    contentType: "html",
+                    success: function (result) {
+                        if (result == "empty-cart") {
+                            var x = document.getElementById("AlertMsgSuccess");
+                            x.style.display = "none";
+                            var y = document.getElementById("AlertMsgWarning");
+                            y.style.display = "block";
+                        }
+                        else {
+                            var x = document.getElementById("AlertMsgSuccess");
+                            x.style.display = "block";
+                            var y = document.getElementById("AlertMsgWarning");
+                            y.style.display = "none";
+
+                            $("#ShoppingCart").html("");
+
+                            var Data =
+                                "<tr style=\"border-top-style:groove;border-top-color:black;\">" +
+                                "<td style=\"font-size:36px\"><b>TOTAL PRICE:</b></td>" +
+                                "<td></td>" +
+                                "<td></td>" +
+                                "<td></td>" +
+                                "<td id=\"total-price\" actual-price-value=\"" + 0 + "\" style=\"font-size:36px;font-weight:bold\">$" + 0 + "</td>" +
+                                "</tr>";
+
+                            $("#ShoppingCart").append(Data);
+                        }
+                    }
+                });
+            });
+            $("#alert-success-close-btn").on("click", function () {
+                var x = document.getElementById("AlertMsg");
+                x.style.display = "none";
+            });
+        });
+    </script>
+}

@@ -1,0 +1,127 @@
+﻿@model TicketService.Data.Models.Customer
+
+@{
+    ViewBag.Title = "CustomerDetails";
+    Layout = "~/Views/Shared/_Layout_Administrator.cshtml";
+}
+
+<h2>Customer Details</h2>
+
+<div>
+    <hr />
+    <dl style="font-size:larger" class="dl-horizontal">
+
+        @{
+            if (Model.IsSuspitious)
+            {
+                <dt style="color:darkred;font-size:x-large">
+                    SUSPITIOUS
+                </dt>
+
+                <dd style="color:darkred;font-size:x-large">
+                    CUSTOMER
+                </dd>
+            }
+        }
+
+        <dt>
+            Username
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.UserName)
+        </dd>
+
+        <dt>
+            First name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.FirstName)
+        </dd>
+
+        <dt>
+            Last name
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.LastName)
+        </dd>
+
+        <dt>
+            Gender
+        </dt>
+
+        @{
+            if (Model.Gender)
+            {
+                <dd>
+                    Male
+                </dd>
+            }
+            else
+            {
+                <dd>
+                    Female
+                </dd>
+            }
+        }
+
+        <dt>
+            Birth date
+        </dt>
+
+        <dd>
+            @Convert.ToString(string.Format("{0:dd/MM/yyyy}", Model.BirthDate))
+        </dd>
+
+        <dt>
+            Collected points
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.NumberOfCollectedPoints)
+        </dd>
+
+        <dt>
+            Customer type
+        </dt>
+
+        <dd>
+            @Html.DisplayFor(model => model.CustomerType).ToString()
+        </dd>
+
+        <dt>
+            Status
+        </dt>
+
+        @{
+            if (Model.IsDeleted)
+            {
+                <dd>
+                    Blocked
+                </dd>
+            }
+            else
+            {
+                <dd>
+                    Active
+                </dd>
+            }
+        }
+    </dl>
+</div>
+@{
+    if (Model.IsDeleted)
+    {
+        <p>
+            <a href="/Administrator/UnblockCustomer/@Model.ID">Unblock</a>
+        </p>
+    }
+    else
+    {
+        <p>
+            <a href="/Administrator/BlockCustomer/@Model.ID">Unblock</a>
+        </p>
+    }
+}

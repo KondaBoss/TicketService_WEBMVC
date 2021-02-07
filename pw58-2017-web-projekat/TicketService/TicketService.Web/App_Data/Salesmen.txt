@@ -1,0 +1,5 @@
+1|Gustavo|Fring|GusBoss|123123|True|1972-12-12|False
+2|Jovan|Prodanovic|Peconi|123123|False|2002-03-08|True
+3|Sales|Man|salesman|123123|False|2012-12-12|False
+4|Salesman|Salesman|Boss|123123|True|2012-12-12|False
+5|Hector|Salamanca|TioBoss|123123|True|1942-04-11|False

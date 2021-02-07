@@ -1,0 +1,370 @@
+﻿@model IEnumerable<TicketService.Data.ViewModels.TicketViewModel>
+
+@{
+    ViewBag.Title = "MyTickets";
+    Layout = "~/Views/Shared/_Layout_Customer.cshtml";
+}
+
+<h2>My Tickets</h2>
+
+<div style="width:1080px;" class="table">
+    <table style="width:inherit" class="table">
+        <thead title="Searching">
+            <tr>
+                <th>Searching</th>
+                <th>Filtering</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td class="table-bordered" style="border-bottom:none;border-left:none;">
+                    <div class="container">
+                        <p>
+                            Event name: <input id="EventNameFilterText" name="EventNameFilterText" type="text" value="" />
+                        </p>
+                        <p>
+                            Date from:
+                            <input id="DateFromFilterText" name="DateFromFilterText" type="datetime-local" />
+                            to
+                            <input id="DateToFilterText" name="DateToFilterText" type="datetime-local" />
+                        </p>
+                        <p>
+                            Price from:
+                            <input id="PriceFromFilterText" name="PriceFromFilterText" type="number" value="" />
+                            to
+                            <input id="PriceToFilterText" name="PriceToFilterText" type="number" value="" />
+                            <input type="submit" id="SearchBtn" value="Search" />
+                        </p>
+                    </div>
+                </td>
+                <td class="table-bordered" style="border-bottom:none;border-right:none;">
+                    <p>
+                        <b>Ticket type: </b>
+                        <select id="TicketType">
+                            <option value="All">All</option>
+                            <option value="Regular">Regular</option>
+                            <option value="Fanpit">Fanpit</option>
+                            <option value="VIP">VIP</option>
+                        </select>
+                    </p>
+                    <p>
+                        <b>Ticket status: </b>
+                        <select id="TicketStatus">
+                            <option value="All">All</option>
+                            <option value="Reserved">Reserved</option>
+                            <option value="Cancelled">Cancelled</option>
+                        </select>
+                    </p>
+                </td>
+        </tbody>
+    </table>
+</div>
+
+
+<table id="myTable" class="table table-bordered">
+    <thead>
+        <tr>
+            <th onclick="sortTable(0)">
+                Event name
+            </th>
+            <th onclick="sortTableByPrice(1)">
+                Price
+            </th>
+            <th onclick="sortTableByDate()">
+                Event date
+            </th>
+            <th>
+                Ticket status
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody id="DataSearching">
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.EventName)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.TicketPrice)
+                </td>
+                <td>
+                    @item.EventDate.ToString("dd.MM.yyyy, HH:mm")
+                </td>
+                @{
+                    if (item.Status)
+                    {
+                        <td>
+                            Reserved
+                        </td>
+                        if (DateTime.Now <= item.EventDate.AddDays(-7))
+                        {
+                            <td>
+                                @Html.ActionLink("Cancel", "CancelTicket", new { id = item.ID })
+                            </td>
+                        }
+                        else
+                        {
+                            <td></td>
+                        }
+                    }
+                    else
+                    {
+                        <td>
+                            Cancelled
+                        </td>
+                        <td></td>
+                    }
+                }
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#SearchBtn").click(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var TicketType = $("#TicketType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&TicketType=" + TicketType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+            $("#EventType").change(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var TicketType = $("#TicketType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&TicketType=" + TicketType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+            $("#TicketStatus").change(function () {
+                var SearchEventNameValue = $("#EventNameFilterText").val();
+                var SearchDateFromValue = $("#DateFromFilterText").val();
+                var SearchDateToValue = $("#DateToFilterText").val();
+                var SearchPriceFromValue = $("#PriceFromFilterText").val();
+                var SearchPriceToValue = $("#PriceToFilterText").val();
+                var TicketType = $("#TicketType").val();
+                var TicketStatus = $("#TicketStatus").val();
+
+                var SetData = $("#DataSearching");
+                SetData.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Customer/GetSearchingData?SearchEventNameValue=" + SearchEventNameValue +
+                        "&SearchDateFromValue=" + SearchDateFromValue +
+                        "&SearchDateToValue=" + SearchDateToValue +
+                        "&SearchPriceFromValue=" + SearchPriceFromValue +
+                        "&SearchPriceToValue=" + SearchPriceToValue +
+                        "&TicketType=" + TicketType +
+                        "&TicketStatus=" + TicketStatus,
+                    contentType: "html",
+                    success: function (result) {
+                        SetData.append(result);
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByDate() {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[2];
+                    y = rows[i + 1].getElementsByTagName("TD")[2];
+                    var dt1 = x.innerHTML.split(',');
+                    var dt2 = y.innerHTML.split(',');
+                    var dateParts1 = dt1[0].split('.');
+                    var timeParts1 = dt1[1].split(':');
+                    var dateParts2 = dt2[0].split('.');
+                    var timeParts2 = dt2[1].split(':');
+                    var d1 = new Date(dateParts1[2], dateParts1[1] - 1, dateParts1[0], timeParts1[0], timeParts1[1]);
+                    var d2 = new Date(dateParts2[2], dateParts2[1] - 1, dateParts2[0], timeParts2[0], timeParts2[1]);
+
+
+                    if (dir == "asc") {
+                        if (d1 > d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (d1 < d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByPrice(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (parseInt(x.innerHTML) > parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (parseInt(x.innerHTML) < parseInt(y.innerHTML)) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+}

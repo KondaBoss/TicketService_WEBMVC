@@ -1,0 +1,61 @@
+﻿@model IEnumerable<TicketService.Data.ViewModels.TicketViewModel>
+
+@{
+    ViewBag.Title = "MyTickets";
+    Layout = "~/Views/Shared/_Layout_Salesman.cshtml";
+}
+
+<h2>My Tickets</h2>
+
+<table class="table">
+    <tr>
+        <th>
+            Event name
+        </th>
+        <th>
+            Ticket price
+        </th>
+        <th>
+            Event date
+        </th>
+        <th>
+            Customer name
+        </th>
+        <th>
+            Status
+        </th>
+    </tr>
+
+    @foreach (var item in Model)
+    {
+     <tr>
+         <td>
+             @Html.DisplayFor(modelItem => item.EventName)
+         </td>
+         <td>
+             @Html.DisplayFor(modelItem => item.TicketPrice)
+         </td>
+         <td>
+             @item.EventDate.ToString("dd.MM.yyyy, HH:mm")
+         </td>
+         <td>
+             @Html.DisplayFor(modelItem => item.CustomerName)
+         </td>
+         @{
+             if (item.Status)
+             {
+                 <td>
+                     Reserved
+                 </td>
+             }
+             else
+             {
+                 <td>
+                     Cancelled
+                 </td>
+             }
+         }
+     </tr>
+    }
+
+</table>

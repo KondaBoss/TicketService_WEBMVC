@@ -1,0 +1,416 @@
+﻿@model TicketService.Data.ViewModels.EventViewModel
+
+@{
+    ViewBag.Title = "EventDetails";
+    Layout = ViewBag.Layout;
+}
+
+<div style="margin-left:7px">
+    <h2>@Model.Name</h2>
+</div>
+<div>
+    <table id="myTable" class="table">
+        <tr>
+            <td>
+                <img src="/Images/@Model.Poster" alt="HTML5 Icon" style="width:512px;height:512px;">
+            </td>
+            <td>
+                <dl style="font-size:x-large" class="dl-horizontal">
+
+                    <dt onclick="sortTable(0)">
+                        Event name
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Name)
+                    </dd>
+
+                    <dt>
+                        Event type
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.EventType)
+                    </dd>
+
+                    <dt>
+                        Capacity
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.Capacity)
+                    </dd>
+
+                    <dt>
+                        Tickets left
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.NumberOfRemainingTickets)
+                    </dd>
+
+                    <dt>
+                        Event date
+                    </dt>
+
+                    <dd>
+                        @Model.EventDate.ToString("dd.MM.yyyy, HH:mm")
+                    </dd>
+
+                    <dt>
+                        Venue
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.VenueName)
+                    </dd>
+
+                    <dt>
+                        Address
+                    </dt>
+
+                    <dd>
+                        @Html.DisplayFor(model => model.VenueAddress)
+                    </dd>
+
+                    <dt>
+                        Ticket price
+                    </dt>
+
+                    <dd id="TicketPrice" data-ticket-price="@Model.TicketPrice">
+                        $@Model.TicketPrice
+                    </dd>
+
+                    <dt>
+                        Rating
+                    </dt>
+
+                    @{ 
+                    if (Model.Rating == -1)
+                        {
+                            <dd>
+                                -
+                            </dd>
+                        }
+                        else
+                        {
+                            <dd>
+                                @Html.DisplayFor(model => model.Rating)
+                            </dd>
+                        }
+                    }
+
+                    <dt>
+                        Status
+                    </dt>
+
+                    @{
+                        if (Model.Status)
+                        {
+                            if (Model.EventDate < DateTime.Now)
+                            {
+                                <dd id="item-status">
+                                    Finished
+                                </dd>
+                            }
+                            else
+                            {
+                                <dd id="item-status">
+                                    Active
+                                </dd>
+                            }
+                        }
+                        else
+                        {
+                            <dd id="item-status">
+                                Inactive
+                            </dd>
+                        }
+                    }
+
+                    @{
+                        if (ViewBag.UserRole == "Administrator")
+                        {
+                            <dt>
+                                Is Deleted
+                            </dt>
+                            if (Model.IsDeleted)
+                            {
+                                <dd id="item-is-deleted">
+                                    Yes
+                                </dd>
+                            }
+                            else
+                            {
+                                <dd id="item-is-deleted">
+                                    No
+                                </dd>
+                            }
+                        }
+                    }
+                </dl>
+
+            </td>
+        </tr>
+    </table>
+</div>
+@{
+    if (ViewBag.UserRole == "Administrator")
+    {
+        <div id="BtnSection" style="margin-top:20px;margin-bottom:20px;width:1100px;text-align:left">
+            <input data-event-id="@Model.ID" id="status-btn" style="border-color:black;font-size:28px;margin-right:20px" class="btn btn-default status-btn" type="submit" value="Approve/Unapprove" />
+            <input data-event-id="@Model.ID" id="delete-btn" style="border-color:black;font-size:28px;margin-right:20px" class="btn btn-default delete-btn" type="submit" value="Delete/Undelete" />
+        </div>
+    }
+    else if (ViewBag.UserRole == "Customer")
+    {
+        if (DateTime.Compare(Model.EventDate, DateTime.Now) > 0)
+        {
+            <div style="margin-left:6px;margin-top:20px;width:1100px;text-align:left">
+                <b style="border-color:black;font-size:28px;margin-right:5px">Buy Ticket: </b>
+            </div>
+            <div style="margin-left:6px;margin-bottom:20px;margin-top:5px;width:1100px;text-align:left">
+                <select data-event-id="@Model.ID" style="display:inline;width:100%;height:54px;font-size:28px;margin-right:5px;border-color:black" class="form-control" id="TicketType" name="TicketType">
+                    <option value="Regular">Regular</option>
+                    <option value="Fanpit">Fanpit</option>
+                    <option value="VIP">VIP</option>
+                </select>
+                <input data-event-id="@Model.ID" id="CartBtn" name="CartBtn" style="border-color:black;font-size:28px;margin-right:20px" class="btn btn-default cart-btn" type="submit" value="Add to Cart" />
+            </div>
+        }
+    }
+}
+
+<div id="AlertMsg" class="alert alert-info fade in" style="display:none">
+    <button id="alert-close-btn" href="#" class="close" aria-label="close">&times;</button>
+    <strong style="font-size:18px">Ticket successfully added to cart.</strong>
+</div>
+
+
+<div id="CommentSection" name="CommentSection">
+
+    <table style="width:100%" id="CommentList" name="CommentList">
+        <thead>
+            <tr>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.CommentList)
+            {
+                <tr style="border:solid">
+                    <td>@item.CustomerUsername:</td>
+                    <td>@item.Text</td>
+                    <td>Rating: @item.Rating</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+@{
+    if (ViewBag.UserRole == "Customer" && ViewBag.CanComment == "True")
+    {
+        <form action="/Customer/PostComment" method="post">
+            <div style="margin-top:10px">
+                <textarea name="commentText" id="commentText" style="font-family:sans-serif;font-size:12px;height:70px;min-width:100%;" value="">
+                </textarea>
+            </div>
+            <div>
+                <p style="font-size:24px;margin-top:10px">
+                    Rating:
+                    <input type="number" id="commentRating" name="commentRating" style="height:50px;width:50px" />
+                </p>
+                <input type="submit" style="border-color:black;font-size:28px;margin-right:20px;margin-top:10px" class="btn btn-default comment-btn" value="Comment">
+                <input type="hidden" id="EventID" name="EventID" value="@Model.ID"/>
+            </div>
+        </form>
+    }
+}
+
+
+</div>
+
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+            $("#BtnSection .status-btn").on("click", function () {
+                var EventID = $(this).attr("data-event-id");
+                var Status = $("#item-status");
+
+                Status.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/ChangeEventStatus?EventID=" + EventID,
+                    contentType: "html",
+                    success: function (result) {
+                        Status.append(result);
+                    }
+                });
+            });
+            $("#BtnSection .delete-btn").on("click", function () {
+                var EventID = $(this).attr("data-event-id");
+                var IsDeleted = $("#item-is-deleted");
+
+                IsDeleted.html("");
+                $.ajax({
+                    type: "post",
+                    url: "/Administrator/DeleteEvent?EventID=" + EventID,
+                    contentType: "html",
+                    success: function (result) {
+                        IsDeleted.append(result);
+                    }
+                });
+            });
+        });
+        $("#TicketType").change(function () {
+            var EventID = $(this).attr("data-event-id");
+            var TicketType = $("#TicketType").val();
+            var SetData = $("#TicketPrice");
+            SetData.html("");
+            $.ajax({
+                type: "post",
+                url: "/Customer/ChangeTicketType?EventID=" + EventID +
+                    "&TicketType=" + TicketType,
+                contentType: "html",
+                success: function (result) {
+                    SetData.append("$" + result);
+                }
+            });
+        });
+        $("#CartBtn").on("click", function () {
+            var EventID = $(this).attr("data-event-id");
+            var TicketType = $("#TicketType").val();
+            var TicketPrice = $("#TicketPrice").attr("data-ticket-price");
+
+            $.ajax({
+                type: "post",
+                url: "/Customer/AddToCart?EventID=" + EventID +
+                    "&TicketType=" + TicketType +
+                    "&TicketPrice=" + TicketPrice,
+                contentType: "html",
+                success: function (result) {
+                    var x = document.getElementById("AlertMsg");
+                    x.style.display = "block";
+                }
+            });
+        });
+        $("#alert-close-btn").on("click", function () {
+            var x = document.getElementById("AlertMsg");
+            x.style.display = "none";
+        });
+    </script>
+    <script>
+        function sortTable(n) {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[n];
+                    y = rows[i + 1].getElementsByTagName("TD")[n];
+
+                    if (dir == "asc") {
+                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+    <script>
+        function sortTableByDate() {
+            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+            table = document.getElementById("myTable");
+            switching = true;
+
+            dir = "asc";
+
+            while (switching) {
+
+                switching = false;
+                rows = table.rows;
+
+                for (i = 1; i < (rows.length - 1); i++) {
+
+                    shouldSwitch = false;
+
+                    x = rows[i].getElementsByTagName("TD")[1];
+                    y = rows[i + 1].getElementsByTagName("TD")[1];
+                    var dt1 = x.innerHTML.split(',');
+                    var dt2 = y.innerHTML.split(',');
+                    var dateParts1 = dt1[0].split('.');
+                    var timeParts1 = dt1[1].split(':');
+                    var dateParts2 = dt2[0].split('.');
+                    var timeParts2 = dt2[1].split(':');
+                    var d1 = new Date(dateParts1[2], dateParts1[1] - 1, dateParts1[0], timeParts1[0], timeParts1[1]);
+                    var d2 = new Date(dateParts2[2], dateParts2[1] - 1, dateParts2[0], timeParts2[0], timeParts2[1]);
+
+
+                    if (dir == "asc") {
+                        if (d1 > d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else if (dir == "desc") {
+                        if (d1 < d2) {
+
+                            shouldSwitch = true;
+                            break;
+                        }
+                    }
+                }
+                if (shouldSwitch) {
+
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+
+                    switchcount++;
+                } else {
+
+                    if (switchcount == 0 && dir == "asc") {
+                        dir = "desc";
+                        switching = true;
+                    }
+                }
+            }
+        }
+    </script>
+
+}
